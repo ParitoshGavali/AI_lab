@@ -9,7 +9,7 @@ vector<string> readMaze(){
     string line;
     vector<string> maze;
     while(getline(cin,line)){
-        maze.insert(maze.end(),line);
+        maze.emplace_back(line);
     }
     // int m = maze.size();
     // int n = maze[m-1].size();
@@ -83,7 +83,13 @@ void performDFS(vector<string> maze,int m,int n){
     printMaze(maze,m,n);
 }
 
+struct Node{
+    pair<int,int> coord;
+    Node* parent=nullptr;
+};
+
 void stackDFS(vector<string> maze,int m,int n){
+
     cout<<"Stack DFS\n";
     int i=1;
     int j=0;
@@ -103,17 +109,17 @@ void stackDFS(vector<string> maze,int m,int n){
             break;
             // return 1;
         }
-        if( i<n-1 && (maze[i+1][j]==' ' || maze[i+1][j]=='*')){
-            s.push({i+1,j});
+        if( j>0 && (maze[i][j-1]==' ' || maze[i][j-1]=='*')){
+            s.push({i,j-1});
+        }
+        if( j<n-1 && (maze[i][j+1]==' ' || maze[i][j+1]=='*')){
+            s.push({i,j+1});
         }
         if( i>0 && (maze[i-1][j]==' ' || maze[i-1][j]=='*')){
             s.push({i-1,j});
         }
-        if( j<m-1 && (maze[i][j+1]==' ' || maze[i][j+1]=='*')){
-            s.push({i,j+1});
-        }
-        if( j>0 && (maze[i][j-1]==' ' || maze[i][j-1]=='*')){
-            s.push({i,j-1});
+        if( i<m-1 && (maze[i+1][j]==' ' || maze[i+1][j]=='*')){
+            s.push({i+1,j});
         }
     }
     cout<<"Complete!";
