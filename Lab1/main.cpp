@@ -2,120 +2,303 @@
 #include<vector>
 #include<stack>
 #include<utility>
+#include<queue>
 
 using namespace std;
 
-enum class Color
-{black,white,grey};
+struct Node {
+    char value;
+    pair<int, int> parent_coord = {-1, -1};
+    bool visited = 0;
+    int depth=0;
+};
 
-vector<string> readMaze(){
+
+vector<string> readMaze() {
     string line;
     vector<string> maze;
-    while(getline(cin,line)){
+    while (getline(cin, line)) {
         maze.emplace_back(line);
     }
     return maze;
 }
-void printMaze(vector<string> maze,int m,int n){
-    for(int i=0;i<m;i++){
-        for(int j=0;j<n;j++){
-            cout<<maze[i][j];
+
+void printMaze(vector<vector<Node>> maze, int m, int n) {
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << maze[i][j].value;
         }
-        cout<<endl;
+        cout << endl;
     }
 }
 
-void printDFSMaze(vector<string> maze,int m,int n){
-    for(int i=0;i<m;i++){
-        for(int j=0;j<n;j++){
-            switch(maze[i][j])
-            {
+void printDFSMaze(vector<string> maze, int m, int n) {
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+            switch (maze[i][j]) {
                 case '1':
-                    cout<<' ';
+                    cout << ' ';
                     break;
                 case '2':
-                    cout<<'2';
+                    cout << '2';
                     break;
                 default:
-                    cout<<maze[i][j];
+                    cout << maze[i][j];
                     break;
             }
 
         }
-        cout<<endl;
+        cout << endl;
     }
 }
 
-struct Node{
-    Node(pair<int,int> coord, Node* parent): coord(coord), parent(parent)
-    {}
-    Node(){}
-    pair<int,int> coord;
-    Node* parent=nullptr;
-    Color c=Color::white;
-};
 
-void stackDFS(vector<string> &maze,int m,int n){
+void stackDFS(vector<vector<Node>> &maze, int m, int n) {
 
-    cout<<"Stack DFS\n";
-    int i=1;
-    int j=0;
-    stack<Node> s;
-//    pair<int,int> p;
-//    s.push({i,j});
-    Node node;
-    node.coord=make_pair(i,j);
-    s.push(node);
-    while(!s.empty()){
+    int no_of_states = 0;
+    int shortest_path = 0;
+    int i = 0;
+    int j = 0;
+    stack<pair<int, int>> s;
+    s.push({i, j});
+    while (!s.empty()) {
 
-        Node node=s.top();
+        auto node = s.top();
         s.pop();
-        i = node.coord.first;
-        j = node.coord.second;
+        no_of_states++;
+        i = node.first;
+        j = node.second;
 
-        printMaze(maze,m,n);
-        if(maze[i][j]=='*'){
-            maze[i][j]='0';
-            Node *pnode = node.parent;
-            while(pnode!=nullptr){
-                i = pnode->coord.first;
-                j = pnode->coord.second;
-                maze[i][j] = '0';
-                cout<<i<<j<<endl;
-                pnode = pnode->parent;
+        if (maze[i][j].value == '*') {
+
+
+            pair<int, int> coord = {i, j};
+            while (coord != make_pair(-1, -1)) {
+                shortest_path++;
+                maze[coord.first][coord.second].value = '0';
+                coord = maze[coord.first][coord.second].parent_coord;
             }
+            cout << no_of_states << '\n' << shortest_path << '\n';
+            printMaze(maze, m, n);
             break;
-            // return 1;
-        }
-        maze[i][j]='2';
-        if( j>0 && (maze[i][j-1]==' ' || maze[i][j-1]=='*')){
-            if(maze[i][j-1]!='*') maze[i][j-1]='1';
-            s.push(Node({i,j-1},&node));
 
         }
-        if( j<n-1 && (maze[i][j+1]==' ' || maze[i][j+1]=='*')){
-            if(maze[i][j+1]!='*') maze[i][j+1]='1';
-            s.push(Node({i,j+1},&node));
+
+        maze[i][j].visited = 1;
+        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
+            //if(maze[i][j-1]!='*') maze[i][j-1]='1';
+            s.push({i, j - 1});
+            maze[i][j - 1].parent_coord = {i, j};
+            maze[i][j - 1].visited = 1;
+
         }
-        if( i>0 && (maze[i-1][j]==' ' || maze[i-1][j]=='*')){
-            if(maze[i-1][j]!='*')maze[i-1][j]='1';
-            s.push(Node({i-1,j},&node));
+        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
+
+            s.push({i, j + 1});
+            maze[i][j + 1].parent_coord = {i, j};
+            maze[i][j + 1].visited = 1;
         }
-        if( i<m-1 && (maze[i+1][j]==' ' || maze[i+1][j]=='*')){
-            if(maze[i+1][j]!='*') maze[i+1][j]='1';
-            s.push(Node({i+1,j},&node));
+        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
+
+            s.push({i - 1, j});
+            maze[i - 1][j].parent_coord = {i, j};
+            maze[i - 1][j].visited = 1;
+        }
+        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
+
+            s.push({i + 1, j});
+            maze[i + 1][j].parent_coord = {i, j};
+            maze[i + 1][j].visited = 1;
         }
     }
-    cout<<"Complete!"<<endl;
+
 }
 
-int main(){
-    cout<<"Hello World\n";
+void queueBFS(vector<vector<Node>> &maze, int m, int n) {
+
+    int no_of_states = 0;
+    int shortest_path = 0;
+    int i = 0;
+    int j = 0;
+    queue<pair<int, int>> s;
+    s.push({i, j});
+    while (!s.empty()) {
+
+        auto node = s.front();
+        s.pop();
+        no_of_states++;
+        i = node.first;
+        j = node.second;
+
+        if (maze[i][j].value == '*') {
+
+
+            pair<int, int> coord = {i, j};
+            while (coord != make_pair(-1, -1)) {
+                shortest_path++;
+                maze[coord.first][coord.second].value = '0';
+                coord = maze[coord.first][coord.second].parent_coord;
+            }
+            cout << no_of_states << '\n' << shortest_path << '\n';
+            printMaze(maze, m, n);
+            break;
+
+        }
+
+        maze[i][j].visited = 1;
+        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
+
+            s.push({i + 1, j});
+            maze[i + 1][j].parent_coord = {i, j};
+            maze[i + 1][j].visited = 1;
+        }
+        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
+
+            s.push({i - 1, j});
+            maze[i - 1][j].parent_coord = {i, j};
+            maze[i - 1][j].visited = 1;
+        }
+        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
+
+            s.push({i, j + 1});
+            maze[i][j + 1].parent_coord = {i, j};
+            maze[i][j + 1].visited = 1;
+        }
+
+        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
+            //if(maze[i][j-1]!='*') maze[i][j-1]='1';
+            s.push({i, j - 1});
+            maze[i][j - 1].parent_coord = {i, j};
+            maze[i][j - 1].visited = 1;
+
+        }
+
+
+
+    }
+
+}
+
+vector<vector<Node>> processGrid(vector<string> maze, int m, int n) {
+    vector<vector<Node>> res(m);
+    for (int i = 0; i < m; i++) {
+        vector<Node> temp;
+        for (int j = 0; j < n; j++) {
+            Node node;
+            node.value = maze[i][j];
+            temp.emplace_back(node);
+        }
+        res[i] = temp;
+    }
+    return res;
+}
+
+bool DFID_pass(vector<vector<Node>> maze,int m,int n,int depth, int &no_of_states)
+{
+    //int no_of_states = 0;
+    //int shortest_path = 0;
+    int i = 0;
+    int j = 0;
+    stack<pair<int, int>> s;
+    s.push({i, j});
+    maze[i][j].depth=0;
+    while (!s.empty()) {
+
+        auto node = s.top();
+        s.pop();
+        no_of_states++;
+        i = node.first;
+        j = node.second;
+
+        if (maze[i][j].value == '*') {
+
+
+            pair<int, int> coord = {i, j};
+            while (coord != make_pair(-1, -1)) {
+
+                maze[coord.first][coord.second].value = '0';
+                coord = maze[coord.first][coord.second].parent_coord;
+            }
+            cout << no_of_states << '\n' << depth+1 << '\n';
+            printMaze(maze, m, n);
+            return true;
+
+        }
+
+        maze[i][j].visited = 1;
+        if(maze[i][j].depth>=depth) continue;
+
+        //left
+        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
+            //if(maze[i][j-1]!='*') maze[i][j-1]='1';
+            s.push({i, j - 1});
+            maze[i][j - 1].parent_coord = {i, j};
+            maze[i][j - 1].visited = 1;
+            maze[i][j-1].depth=maze[i][j].depth+1;
+
+
+        }
+
+        //right
+        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
+
+            s.push({i, j + 1});
+            maze[i][j + 1].parent_coord = {i, j};
+            maze[i][j + 1].visited = 1;
+            maze[i][j+1].depth=maze[i][j].depth+1;
+        }
+
+        //up
+        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
+
+            s.push({i - 1, j});
+            maze[i - 1][j].parent_coord = {i, j};
+            maze[i - 1][j].visited = 1;
+            maze[i-1][j].depth=maze[i][j].depth+1;
+        }
+
+        //down
+        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
+
+            s.push({i + 1, j});
+            maze[i + 1][j].parent_coord = {i, j};
+            maze[i + 1][j].visited = 1;
+            maze[i+1][j].depth=maze[i][j].depth+1;
+        }
+
+    }
+    return false;
+
+}
+
+void DFID(vector<vector<Node>> &maze, int m, int n)
+{
+    int depth=0;
+    int no_of_states=0;
+    while(!DFID_pass(maze,m,n,depth,no_of_states))
+    {
+        depth++;
+    }
+}
+
+int main() {
+    //cout<<"Hello World\n";
+    string algoCode;
+    getline(cin,algoCode);
     vector<string> maze = readMaze();
     int m = maze.size();
-    int n = maze[m-1].size();
-    printMaze(maze,m,n);
-    stackDFS(maze,m,n);
-    printDFSMaze(maze,m,n);
+    int n = maze[m - 1].size();
+    vector<vector<Node>> proGrid = processGrid(maze, m, n);
+    switch (algoCode[0]) {
+        case '0':
+            queueBFS(proGrid, m, n);
+            break;
+        case '1':
+            stackDFS(proGrid, m, n);
+            break;
+        case '2':
+            DFID(proGrid,m,n);
+    }
+
     return 0;
 }
