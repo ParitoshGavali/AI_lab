@@ -6,6 +6,7 @@
 
 using namespace std;
 
+//Each cell in the grid is a node in the graph
 struct Node {
     char value;
     pair<int, int> parent_coord = {-1, -1};
@@ -13,7 +14,7 @@ struct Node {
     int depth=1e9;
 };
 
-
+//Take text maze as input
 vector<string> readMaze() {
     string line;
     vector<string> maze;
@@ -23,6 +24,7 @@ vector<string> readMaze() {
     return maze;
 }
 
+//Prints the Node maze
 void printMaze(vector<vector<Node>> maze, int m, int n) {
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
@@ -32,153 +34,7 @@ void printMaze(vector<vector<Node>> maze, int m, int n) {
     }
 }
 
-void printDFSMaze(vector<string> maze, int m, int n) {
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-            switch (maze[i][j]) {
-                case '1':
-                    cout << ' ';
-                    break;
-                case '2':
-                    cout << '2';
-                    break;
-                default:
-                    cout << maze[i][j];
-                    break;
-            }
-
-        }
-        cout << endl;
-    }
-}
-
-
-void stackDFS(vector<vector<Node>> &maze, int m, int n) {
-
-    int no_of_states = 0;
-    int shortest_path = 0;
-    int i = 0;
-    int j = 0;
-    stack<pair<int, int>> s;
-    s.push({i, j});
-    while (!s.empty()) {
-
-        auto node = s.top();
-        s.pop();
-        no_of_states++;
-        i = node.first;
-        j = node.second;
-
-        if (maze[i][j].value == '*') {
-
-
-            pair<int, int> coord = {i, j};
-            while (coord != make_pair(-1, -1)) {
-                shortest_path++;
-                maze[coord.first][coord.second].value = '0';
-                coord = maze[coord.first][coord.second].parent_coord;
-            }
-            cout << no_of_states << '\n' << shortest_path << '\n';
-            printMaze(maze, m, n);
-            break;
-
-        }
-
-        maze[i][j].visited = 1;
-        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
-            //if(maze[i][j-1]!='*') maze[i][j-1]='1';
-            s.push({i, j - 1});
-            maze[i][j - 1].parent_coord = {i, j};
-            maze[i][j - 1].visited = 1;
-
-        }
-        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
-
-            s.push({i, j + 1});
-            maze[i][j + 1].parent_coord = {i, j};
-            maze[i][j + 1].visited = 1;
-        }
-        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
-
-            s.push({i - 1, j});
-            maze[i - 1][j].parent_coord = {i, j};
-            maze[i - 1][j].visited = 1;
-        }
-        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
-
-            s.push({i + 1, j});
-            maze[i + 1][j].parent_coord = {i, j};
-            maze[i + 1][j].visited = 1;
-        }
-    }
-
-}
-
-void queueBFS(vector<vector<Node>> &maze, int m, int n) {
-
-    int no_of_states = 0;
-    int shortest_path = 0;
-    int i = 0;
-    int j = 0;
-    queue<pair<int, int>> s;
-    s.push({i, j});
-    while (!s.empty()) {
-
-        auto node = s.front();
-        s.pop();
-        no_of_states++;
-        i = node.first;
-        j = node.second;
-
-        if (maze[i][j].value == '*') {
-
-
-            pair<int, int> coord = {i, j};
-            while (coord != make_pair(-1, -1)) {
-                shortest_path++;
-                maze[coord.first][coord.second].value = '0';
-                coord = maze[coord.first][coord.second].parent_coord;
-            }
-            cout << no_of_states << '\n' << shortest_path << '\n';
-            printMaze(maze, m, n);
-            break;
-
-        }
-
-        maze[i][j].visited = 1;
-        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
-
-            s.push({i + 1, j});
-            maze[i + 1][j].parent_coord = {i, j};
-            maze[i + 1][j].visited = 1;
-        }
-        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
-
-            s.push({i - 1, j});
-            maze[i - 1][j].parent_coord = {i, j};
-            maze[i - 1][j].visited = 1;
-        }
-        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
-
-            s.push({i, j + 1});
-            maze[i][j + 1].parent_coord = {i, j};
-            maze[i][j + 1].visited = 1;
-        }
-
-        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
-            //if(maze[i][j-1]!='*') maze[i][j-1]='1';
-            s.push({i, j - 1});
-            maze[i][j - 1].parent_coord = {i, j};
-            maze[i][j - 1].visited = 1;
-
-        }
-
-
-
-    }
-
-}
-
+//Makes Nodes object grid from raw text grid
 vector<vector<Node>> processGrid(vector<string> maze, int m, int n) {
     vector<vector<Node>> res(m);
     for (int i = 0; i < m; i++) {
@@ -193,6 +49,153 @@ vector<vector<Node>> processGrid(vector<string> maze, int m, int n) {
     return res;
 }
 
+//Performs DFS (iterative)
+void stackDFS(vector<vector<Node>> &maze, int m, int n) {
+
+    int no_of_states = 0;
+    int shortest_path = 0;
+    int i = 0;
+    int j = 0;
+
+    //Use stack for DFS. Push the coordinates of the Node in the stack
+    stack<pair<int, int>> s;
+    s.push({i, j});
+
+    while (!s.empty()) {
+
+        auto node = s.top();
+        s.pop();
+        no_of_states++;
+        i = node.first;
+        j = node.second;
+
+        //Terminating case
+        if (maze[i][j].value == '*') {
+
+            pair<int, int> coord = {i, j};
+            while (coord != make_pair(-1, -1)) {
+                shortest_path++;
+                maze[coord.first][coord.second].value = '0';
+                coord = maze[coord.first][coord.second].parent_coord;
+            }
+            cout << no_of_states << '\n' << shortest_path << '\n';
+            printMaze(maze, m, n);
+            break;
+
+        }
+
+        maze[i][j].visited = 1;
+
+        //We write the loops in the reverse ordered of the preferred direction (DURL) because we are using stack which is LIFO
+
+        //left
+        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
+            s.push({i, j - 1});
+            maze[i][j - 1].parent_coord = {i, j};
+            maze[i][j - 1].visited = 1;
+
+        }
+
+        //right
+        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
+
+            s.push({i, j + 1});
+            maze[i][j + 1].parent_coord = {i, j};
+            maze[i][j + 1].visited = 1;
+        }
+
+        //up
+        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
+
+            s.push({i - 1, j});
+            maze[i - 1][j].parent_coord = {i, j};
+            maze[i - 1][j].visited = 1;
+        }
+
+        //down
+        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
+
+            s.push({i + 1, j});
+            maze[i + 1][j].parent_coord = {i, j};
+            maze[i + 1][j].visited = 1;
+        }
+    }
+
+}
+
+//Iterative BFS
+void queueBFS(vector<vector<Node>> &maze, int m, int n) {
+
+    int no_of_states = 0;
+    int shortest_path = 0;
+    int i = 0;
+    int j = 0;
+
+    //Use queue for BFS. Push the coordinates of the Node in the queue
+    queue<pair<int, int>> s;
+    s.push({i, j});
+    while (!s.empty()) {
+
+        auto node = s.front();
+        s.pop();
+        no_of_states++;
+        i = node.first;
+        j = node.second;
+
+        //Terminating case
+        if (maze[i][j].value == '*') {
+
+
+            pair<int, int> coord = {i, j};
+            while (coord != make_pair(-1, -1)) {
+                shortest_path++;
+                maze[coord.first][coord.second].value = '0';
+                coord = maze[coord.first][coord.second].parent_coord;
+            }
+            cout << no_of_states << '\n' << shortest_path << '\n';
+            printMaze(maze, m, n);
+            break;
+
+        }
+
+        maze[i][j].visited = 1;
+
+        //down
+        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
+
+            s.push({i + 1, j});
+            maze[i + 1][j].parent_coord = {i, j};
+            maze[i + 1][j].visited = 1;
+        }
+
+        //up
+        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
+
+            s.push({i - 1, j});
+            maze[i - 1][j].parent_coord = {i, j};
+            maze[i - 1][j].visited = 1;
+        }
+
+        //right
+        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
+
+            s.push({i, j + 1});
+            maze[i][j + 1].parent_coord = {i, j};
+            maze[i][j + 1].visited = 1;
+        }
+
+        //left
+        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
+            s.push({i, j - 1});
+            maze[i][j - 1].parent_coord = {i, j};
+            maze[i][j - 1].visited = 1;
+
+        }
+
+    }
+
+}
+
 bool DFID_pass(vector<vector<Node>> maze,int m,int n,int depth, int &no_of_states)
 {
     int i = 0;
@@ -200,7 +203,7 @@ bool DFID_pass(vector<vector<Node>> maze,int m,int n,int depth, int &no_of_state
     stack<pair<int, int>> s;
     s.push({i, j});
     maze[i][j].depth=0;
-    //bool ret=false;
+
     while (!s.empty()) {
 
         auto node = s.top();
@@ -220,17 +223,19 @@ bool DFID_pass(vector<vector<Node>> maze,int m,int n,int depth, int &no_of_state
             }
             cout << no_of_states << '\n' << depth+1 << '\n';
             printMaze(maze, m, n);
-            //ret=true;
+
             return true;
 
         }
 
         //left
         if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && maze[i][j].depth+1 < maze[i][j - 1].depth) {
-            
+
             maze[i][j - 1].parent_coord = {i, j};
             maze[i][j - 1].visited = 1;
             maze[i][j-1].depth=maze[i][j].depth+1;
+
+            //Verify depth of child <= maximum depth
             if(maze[i][j-1].depth <= depth) s.push({i, j - 1});
 
         }
@@ -283,7 +288,7 @@ void DFID(vector<vector<Node>> &maze, int m, int n)
 }
 
 int main() {
-    //cout<<"Hello World\n";
+
     string algoCode;
     getline(cin,algoCode);
     vector<string> maze = readMaze();
