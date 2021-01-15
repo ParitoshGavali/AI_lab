@@ -1,0 +1,3 @@
+D:/IIT/6th Sem/Artificial Intelligence/Lab/Lab 1/AI_lab/Lab1/cmake-build-debug/CMakeFiles/Lab1.dir
+D:/IIT/6th Sem/Artificial Intelligence/Lab/Lab 1/AI_lab/Lab1/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/IIT/6th Sem/Artificial Intelligence/Lab/Lab 1/AI_lab/Lab1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
