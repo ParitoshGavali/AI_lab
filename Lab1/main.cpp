@@ -10,7 +10,7 @@ struct Node {
     char value;
     pair<int, int> parent_coord = {-1, -1};
     bool visited = 0;
-    int depth=0;
+    int depth=1e9;
 };
 
 
@@ -193,71 +193,14 @@ vector<vector<Node>> processGrid(vector<string> maze, int m, int n) {
     return res;
 }
 
-
-///////////////////////////////////////////////////
-int no_of_states=0;
-
-bool recur_DFID(vector<vector<Node>> &maze, int m,int n, int depth,int i,int j){
-    no_of_states++;
-    bool ret = false;
-    if(maze[i][j].depth>=depth){
-        if(maze[i][j].value=='*'){
-            return true;
-        }
-    }
-    else{
-        //down
-        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
-            maze[i + 1][j].parent_coord = {i, j};
-            maze[i + 1][j].visited = 1;
-            maze[i+1][j].depth=maze[i][j].depth+1;
-            ret = recur_DFID(maze,m,n,depth,i+1,j);
-        }
-
-        //up
-        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
-            maze[i - 1][j].parent_coord = {i, j};
-            maze[i - 1][j].visited = 1;
-            maze[i-1][j].depth=maze[i][j].depth+1;
-            ret = recur_DFID(maze,m,n,depth,i-1,j);
-        }
-        //right
-        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
-            maze[i][j + 1].parent_coord = {i, j};
-            maze[i][j + 1].visited = 1;
-            maze[i][j+1].depth=maze[i][j].depth+1;
-            ret = recur_DFID(maze,m,n,depth,i,j+1);
-        }
-        //left
-        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
-            //if(maze[i][j-1]!='*') maze[i][j-1]='1';
-            maze[i][j - 1].parent_coord = {i, j};
-            maze[i][j - 1].visited = 1;
-            maze[i][j-1].depth=maze[i][j].depth+1;
-            ret = recur_DFID(maze,m,n,depth,i,j-1);
-        }
-    }
-    return ret;
-}
-
-void main_recur_DFID(vector<vector<Node>> maze,int m,int n){
-    int depth=0;
-    while(!recur_DFID(maze,m,n,depth,0,0)){
-        depth++;
-    }
-    cout<<no_of_states<<endl<<depth;
-}
-
-///////////////////////////////////////////////////////////////////////////
 bool DFID_pass(vector<vector<Node>> maze,int m,int n,int depth, int &no_of_states)
 {
-    //int no_of_states = 0;
-    //int shortest_path = 0;
     int i = 0;
     int j = 0;
     stack<pair<int, int>> s;
     s.push({i, j});
     maze[i][j].depth=0;
+    //bool ret=false;
     while (!s.empty()) {
 
         auto node = s.top();
@@ -277,50 +220,52 @@ bool DFID_pass(vector<vector<Node>> maze,int m,int n,int depth, int &no_of_state
             }
             cout << no_of_states << '\n' << depth+1 << '\n';
             printMaze(maze, m, n);
+            //ret=true;
             return true;
 
         }
 
-        maze[i][j].visited = 1;
-        if(maze[i][j].depth>=depth) continue;
-
         //left
-        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && !maze[i][j - 1].visited) {
-            //if(maze[i][j-1]!='*') maze[i][j-1]='1';
-            s.push({i, j - 1});
+        if (j > 0 && (maze[i][j - 1].value == ' ' || maze[i][j - 1].value == '*') && maze[i][j].depth+1 < maze[i][j - 1].depth) {
+            
             maze[i][j - 1].parent_coord = {i, j};
             maze[i][j - 1].visited = 1;
             maze[i][j-1].depth=maze[i][j].depth+1;
-
+            if(maze[i][j-1].depth <= depth) s.push({i, j - 1});
 
         }
 
         //right
-        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && !maze[i][j + 1].visited) {
+        if (j < n - 1 && (maze[i][j + 1].value == ' ' || maze[i][j + 1].value == '*') && maze[i][j].depth+1 <maze[i][j + 1].depth) {
 
-            s.push({i, j + 1});
+
             maze[i][j + 1].parent_coord = {i, j};
             maze[i][j + 1].visited = 1;
             maze[i][j+1].depth=maze[i][j].depth+1;
+            if(maze[i][j+1].depth <= depth) s.push({i, j + 1});
         }
 
         //up
-        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && !maze[i - 1][j].visited) {
+        if (i > 0 && (maze[i - 1][j].value == ' ' || maze[i - 1][j].value == '*') && maze[i][j].depth+1 <maze[i-1][j].depth) {
 
-            s.push({i - 1, j});
+
             maze[i - 1][j].parent_coord = {i, j};
             maze[i - 1][j].visited = 1;
             maze[i-1][j].depth=maze[i][j].depth+1;
+            if(maze[i-1][j].depth<=depth) s.push({i - 1, j});
         }
 
-        //down
-        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && !maze[i + 1][j].visited) {
 
-            s.push({i + 1, j});
+        //down
+        if (i < m - 1 && (maze[i + 1][j].value == ' ' || maze[i + 1][j].value == '*') && maze[i][j].depth+1 < maze[i+1][j].depth) {
+
+
             maze[i + 1][j].parent_coord = {i, j};
             maze[i + 1][j].visited = 1;
             maze[i+1][j].depth=maze[i][j].depth+1;
+            if(maze[i+1][j].depth<=depth) s.push({i + 1, j});
         }
+
 
     }
     return false;
@@ -353,9 +298,7 @@ int main() {
             stackDFS(proGrid, m, n);
             break;
         case '2':
-            // DFID(proGrid,m,n);
-            main_recur_DFID(proGrid,m,n);
+            DFID(proGrid,m,n);
     }
-
     return 0;
 }
