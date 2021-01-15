@@ -5,6 +5,9 @@
 
 using namespace std;
 
+enum class Color
+{black,white,grey};
+
 vector<string> readMaze(){
     string line;
     vector<string> maze;
@@ -19,7 +22,20 @@ vector<string> readMaze(){
 void printMaze(vector<string> maze,int m,int n){
     for(int i=0;i<m;i++){
         for(int j=0;j<n;j++){
-            cout<<maze[i][j];
+            //cout<<(maze[i][j]=='1' ? ' ':maze[i][j]);
+            switch(maze[i][j])
+            {
+                case '1':
+                    cout<<' ';
+                    break;
+                case '2':
+                    cout<<'0';
+                    break;
+                default:
+                    cout<<maze[i][j];
+                    break;
+            }
+
         }
         cout<<endl;
     }
@@ -84,42 +100,56 @@ void performDFS(vector<string> maze,int m,int n){
 }
 
 struct Node{
+    Node(pair<int,int> coord, Node* parent): coord(coord), parent(parent)
+    {}
+    Node(){}
     pair<int,int> coord;
     Node* parent=nullptr;
+    Color c=Color::white;
 };
 
-void stackDFS(vector<string> maze,int m,int n){
+void stackDFS(vector<string> &maze,int m,int n){
 
     cout<<"Stack DFS\n";
     int i=1;
     int j=0;
-    stack<pair<int,int>> s;
-    pair<int,int> p;
-    s.push({i,j});
+    stack<Node> s;
+//    pair<int,int> p;
+//    s.push({i,j});
+    Node node;
+    node.coord=make_pair(i,j);
+    s.push(node);
     while(!s.empty()){
-        p=s.top();
+
+        Node node=s.top();
         s.pop();
-        i = p.first;
-        j = p.second;
-        maze[i][j]='0';
+        i = node.coord.first;
+        j = node.coord.second;
+
         printMaze(maze,m,n);
         if(maze[i][j]=='*'){
-            maze[i][j]='0';
+            maze[i][j]='2';
             cout<<"wth";
             break;
             // return 1;
         }
+        maze[i][j]='2';
         if( j>0 && (maze[i][j-1]==' ' || maze[i][j-1]=='*')){
-            s.push({i,j-1});
+            if(maze[i][j-1]!='*') maze[i][j-1]='1';
+            s.push(Node({i,j-1},&node));
+
         }
         if( j<n-1 && (maze[i][j+1]==' ' || maze[i][j+1]=='*')){
-            s.push({i,j+1});
+            if(maze[i][j+1]!='*') maze[i][j+1]='1';
+            s.push(Node({i,j+1},&node));
         }
         if( i>0 && (maze[i-1][j]==' ' || maze[i-1][j]=='*')){
-            s.push({i-1,j});
+            if(maze[i-1][j]!='*')maze[i-1][j]='1';
+            s.push(Node({i-1,j},&node));
         }
         if( i<m-1 && (maze[i+1][j]==' ' || maze[i+1][j]=='*')){
-            s.push({i+1,j});
+            if(maze[i+1][j]!='*') maze[i+1][j]='1';
+            s.push(Node({i+1,j},&node));
         }
     }
     cout<<"Complete!";
@@ -135,5 +165,6 @@ int main(){
     // printMaze(maze,m,n);
     // performDFS(maze,m,n);
     stackDFS(maze,m,n);
+    printMaze(maze,m,n);
     return 0;
 }
