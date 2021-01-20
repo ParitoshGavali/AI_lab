@@ -51,6 +51,21 @@ def goalTest(curr,goal):
 
 # Heuristics
 
+def naiveHelper(list1,list2):
+    n = min(len(list1,list2))
+    score = 0
+    for i in range(n):
+        if list1[i]==list2[i]:
+            score += 1
+    return score    
+    
+def naiveMatching(goal,state):
+    score = 0
+    for i in range(len(state)):
+        score += naiveHelper(state[i],goal[i])
+    return score
+
+
 # AI algorithms
 
 
