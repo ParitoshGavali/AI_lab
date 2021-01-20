@@ -146,7 +146,7 @@ def HC(start,goal,func):
 # Main program
 
 # Initialisation of the domain 
-startState,goalState = initGame(3,6)
+startState,goalState = initGame(3,3)
 print('Initialising...')
 print('\nStart State : ')
 printState(startState)
