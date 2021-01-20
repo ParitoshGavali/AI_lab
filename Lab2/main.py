@@ -57,7 +57,9 @@ def heuristic_manhattan(state, goal):
             for goal_row_index,k in enumerate(goal):
                 for goal_index,l in enumerate(k):
                     if(j==l):
-                        if(state_row_index != goal_row_index):
+                        if(state_index==goal_index and state_row_index==goal_row_index):
+                            cost = cost - (len(i) - state_index - 1)                            
+                        elif(state_row_index != goal_row_index):
                             tempcost = len(i) - state_index + len(k) - goal_index - 1
                             cost=cost + tempcost
                         else:
