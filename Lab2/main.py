@@ -44,6 +44,9 @@ def generateNewStates(state):
                     newStates.append(tempState)
     return newStates
 
+# check for goal
+def goalTest(curr,goal):
+    return curr==goal
 
 
 # Heuristics
