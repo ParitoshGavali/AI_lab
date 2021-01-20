@@ -50,6 +50,15 @@ def goalTest(curr,goal):
 
 
 # Heuristics
+def heuristic_manhattan(state, goal):
+    cost=0
+    for i in state:
+        for state_index,j in enumerate(i):
+            for k in goal:
+                for l,goal_index in enumerate(k):
+                    if(j==l):
+                        cost=cost + len(i) - state_index - 1 + len(k) - goal_index - 1
+    return -cost
 
 def naiveHelper(list1,list2):
     n = min(len(list1,list2))
@@ -65,6 +74,8 @@ def naiveMatching(goal,state):
         score += naiveHelper(state[i],goal[i])
     return score
 
+            
+            
 
 # AI algorithms
 
