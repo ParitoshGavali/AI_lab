@@ -1,0 +1,6 @@
+g++ main.cpp
+./a.out < INPUT_FILENAME 
+
+####### SAMPLE #########
+g++ main.cpp
+./a.out < grid1
