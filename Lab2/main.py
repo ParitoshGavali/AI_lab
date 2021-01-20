@@ -1,4 +1,6 @@
 import random
+import copy
+from queue import PriorityQueue
 
 # Basic codes
 
@@ -36,20 +38,17 @@ def generateNewStates(state):
         if (len(state[i])>=1):
             for j in range(numStack):
                 if i!=j :
-                    tempState = state.copy()
-                    print(len(tempState[i]))
+                    tempState = copy.deepcopy(state)
                     n = tempState[i].pop()
                     tempState[j].append(n)
                     newStates.append(tempState)
-    print(len(newStates))
+    return newStates
 
 
 
 # Heuristics
 
 # AI algorithms
-
-# 
 
 
 
@@ -61,12 +60,8 @@ visitedStates = []
 pQueue = []
 pQueue.append(startState)
 
-# print('Initialising...')
-# print('\nStart State : ')
-# printState(startState)
-# print('\nGoal State : ')
-# printState(goalState)
-
-test = [[0,1],[],[2,3]]
-printState(test)
-generateNewStates(test)
+print('Initialising...')
+print('\nStart State : ')
+printState(startState)
+print('\nGoal State : ')
+printState(goalState)
