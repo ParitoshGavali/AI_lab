@@ -1,5 +1,7 @@
 import random
 import copy
+import sys
+import csv
 from queue import PriorityQueue
 
 # Basic codes
@@ -112,14 +114,16 @@ def BFS(start,goal,func):
         print('\n',count,func(v,goal))
         printState(v)
         if goalTest(v,goal):
-            print('completed!')
-            return True
+            print('\nCompleted!!')
+            print('Number of iterations : ',count)
+            print('Heuristic value : ',func(v,goal))
+            return True,count
         nextStates = generateNewStates(v)
         for u in nextStates:
             if u not in visitedStates:
                 pq.put((func(u,goal),u))
                 visitedStates.append(u)
-    return False
+    return False,count
 
 # Hill Climb Racing
 def HC(start,goal,func):
@@ -128,6 +132,7 @@ def HC(start,goal,func):
     currState = start
     value = func(start,goal)
     printState(currState)
+    count = 1
     while(not goalTest(currState,goal)):
         nextStates = generateNewStates(currState)
         flag = False
@@ -138,17 +143,26 @@ def HC(start,goal,func):
                     value = func(u,goal)
                     currState = u
         visitedStates.append(currState)
+        print('\n',count,func(currState,goal))
         printState(currState)
+        count += 1
         if not flag:
-            print('local maxima')
-            return False
-    return True
+            print('\nStuck in local maxima')
+            print('Number of iterations : ',count)
+            print('Heuristic value : ',func(currState,goal))
+            return False,count
+    print('\nCompleted!!')
+    print('Number of iterations : ',count)
+    print('Heuristic value : ',func(currState,goal))
+    return True,count
 
 
 # Main program
 
 # Initialisation of the domain 
-startState,goalState = initGame(3,3)
+rows = int(sys.argv[1])
+numberOfBlocks = int(sys.argv[2])
+startState,goalState = initGame(rows,numberOfBlocks)
 print('Initialising...')
 print('\nStart State : ')
 printState(startState)
@@ -158,20 +172,39 @@ printState(goalState)
 # print('n : ',naiveMatching(startState,goalState))
 # print('n : ',weightedMatching(startState,goalState))
 
+line = str(rows) + ',' + str(numberOfBlocks)
 
-print('BFS Manhattan')
-BFS(startState,goalState,heuristic_manhattan)
-print('\n\n BFS Naive')
-BFS(startState,goalState,naiveMatching)
-print('\n\n BFS Weighted Naive')
-BFS(startState,goalState,weightedMatching)
-print('HC Manhattan')
-HC(startState,goalState,heuristic_manhattan)
-print('\n\n HC Naive')
-HC(startState,goalState,naiveMatching)
-print('\n\n HC Weighted Naive')
-HC(startState,goalState,weightedMatching)
-print('\nStart State : ')
+print('\n######################\nBFS Manhattan')
+status,itr = BFS(startState,goalState,heuristic_manhattan)
+line = line + ',' + str(status) + ',' + str(itr) 
+
+print('\n######################\n BFS Naive')
+status,itr = BFS(startState,goalState,naiveMatching)
+line = line + ',' + str(status) + ',' + str(itr) 
+
+print('\n######################\n BFS Weighted Naive')
+status,itr = BFS(startState,goalState,weightedMatching)
+line = line + ',' + str(status) + ',' + str(itr) 
+
+print('\n######################\nHC Manhattan')
+status,itr = HC(startState,goalState,heuristic_manhattan)
+line = line + ',' + str(status) + ',' + str(itr) 
+
+print('\n######################\n HC Naive')
+status,itr = HC(startState,goalState,naiveMatching)
+line = line + ',' + str(status) + ',' + str(itr) 
+
+print('\n######################\n HC Weighted Naive')
+status,itr = HC(startState,goalState,weightedMatching)
+line = line + ',' + str(status) + ',' + str(itr) 
+
+print('\n######################\nStart State : ')
 printState(startState)
 print('\nGoal State : ')
 printState(goalState)
+print(line)
+
+## write in csv
+f = open('data.csv', 'a')
+f.write('\n' + line)
+f.close()
