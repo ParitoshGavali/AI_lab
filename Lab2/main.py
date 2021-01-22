@@ -6,14 +6,14 @@ from queue import PriorityQueue
 
 # Basic codes
 
+# to print surrent state on console
 def printState(state):
     for s in state:
         print(s)
 
-def initGame(stacks,blocks):
-    
+# initalisation function to generate the intital and goal state based on given inputs (number of stacks and number of blocks)
+def initGame(stacks,blocks):    
     sampleSpace = list(range(1,blocks+1))
-    # print('Sample space : ',sampleSpace)
     
     initState = [[] for _ in range(stacks)]
     random.shuffle(sampleSpace)
@@ -25,13 +25,9 @@ def initGame(stacks,blocks):
     for s in sampleSpace:
         goalState[random.randint(0,stacks-1)].append(s)
     
-    # print('\nInitial State : ')
-    # printState(initState)
-    # print('\nGoal State : ')
-    # printState(goalState)
     return initState,goalState
 
-# Find new states
+# Find all possible neighbour(next) states based on current state
 def generateNewStates(state):
     numStack = len(state)
     newStates = []
@@ -46,12 +42,15 @@ def generateNewStates(state):
                     newStates.append(tempState)
     return newStates
 
-# check for goal
+# check if current state is goal state
 def goalTest(curr,goal):
     return curr==goal
 
+################
+#  Heuristics  #      
+################
 
-# Heuristics
+# Heuristic 1
 def heuristic_manhattan(state, goal):
     cost=0
     for state_row_index,i in enumerate(state):
@@ -68,6 +67,7 @@ def heuristic_manhattan(state, goal):
                             cost = cost + abs(state_index-goal_index)
     return cost
 
+# Heuristic 2
 def naiveHelper(list1,list2):
     n = min(len(list1),len(list2))
     score = 0
@@ -82,6 +82,7 @@ def naiveMatching(state,goal):
         score += naiveHelper(state[i],goal[i])
     return -score
 
+# Heuristic 3
 def weightedHelper(list1,list2):
     n = min(len(list1),len(list2))
     score = 0
@@ -96,9 +97,9 @@ def weightedMatching(state,goal):
         score += weightedHelper(state[i],goal[i])
     return -score
             
-            
-
-# AI algorithms
+#################
+# AI algorithms #
+#################
 
 # BFS
 def BFS(start,goal,func):
@@ -125,7 +126,7 @@ def BFS(start,goal,func):
                 visitedStates.append(u)
     return False,count
 
-# Hill Climb Racing
+# Hill Climb
 def HC(start,goal,func):
     visitedStates = []
     visitedStates.append(start)
@@ -156,8 +157,9 @@ def HC(start,goal,func):
     print('Heuristic value : ',func(currState,goal))
     return True,count
 
-
-# Main program
+################
+# Main program #
+################
 
 # Initialisation of the domain 
 rows = int(sys.argv[1])
@@ -168,43 +170,48 @@ print('\nStart State : ')
 printState(startState)
 print('\nGoal State : ')
 printState(goalState)
-# print('h : ',heuristic_manhattan(startState,goalState))
-# print('n : ',naiveMatching(startState,goalState))
-# print('n : ',weightedMatching(startState,goalState))
 
-line = str(rows) + ',' + str(numberOfBlocks)
+# line = str(rows) + ',' + str(numberOfBlocks)  # for collecting data in a csv file
+out = '\n##########################\n'
 
 print('\n######################\nBFS Manhattan')
 status,itr = BFS(startState,goalState,heuristic_manhattan)
-line = line + ',' + str(status) + ',' + str(itr) 
+out = out + '\nBFS Manhattan based heuristic | Goal reached:'+str(status)+' | number of iterations:'+str(itr)
+# line = line + ',' + str(status) + ',' + str(itr) 
 
 print('\n######################\n BFS Naive')
 status,itr = BFS(startState,goalState,naiveMatching)
-line = line + ',' + str(status) + ',' + str(itr) 
+out = out + '\nBFS Naive based heuristic | Goal reached:'+str(status)+' | number of iterations:'+str(itr)
+# line = line + ',' + str(status) + ',' + str(itr) 
 
 print('\n######################\n BFS Weighted Naive')
 status,itr = BFS(startState,goalState,weightedMatching)
-line = line + ',' + str(status) + ',' + str(itr) 
+out = out + '\nBFS Weighted Naive based heuristic | Goal reached:'+str(status)+' | number of iterations:'+str(itr)
+# line = line + ',' + str(status) + ',' + str(itr) 
 
 print('\n######################\nHC Manhattan')
 status,itr = HC(startState,goalState,heuristic_manhattan)
-line = line + ',' + str(status) + ',' + str(itr) 
+out = out + '\nHC Manhattan based heuristic | Goal reached:'+str(status)+' | number of iterations:'+str(itr)
+# line = line + ',' + str(status) + ',' + str(itr) 
 
 print('\n######################\n HC Naive')
 status,itr = HC(startState,goalState,naiveMatching)
-line = line + ',' + str(status) + ',' + str(itr) 
+out = out + '\nHC Naive based heuristic | Goal reached:'+str(status)+' | number of iterations:'+str(itr)
+# line = line + ',' + str(status) + ',' + str(itr) 
 
 print('\n######################\n HC Weighted Naive')
 status,itr = HC(startState,goalState,weightedMatching)
-line = line + ',' + str(status) + ',' + str(itr) 
+out = out + '\nHC Weighted Naive based heuristic | Goal reached:'+str(status)+' | number of iterations:'+str(itr)
+# line = line + ',' + str(status) + ',' + str(itr) 
 
 print('\n######################\nStart State : ')
 printState(startState)
 print('\nGoal State : ')
 printState(goalState)
-print(line)
+print(out)
+# print(line)
 
 ## write in csv
-f = open('data.csv', 'a')
-f.write('\n' + line)
-f.close()
+# f = open('data.csv', 'a')
+# f.write('\n' + line)
+# f.close()
