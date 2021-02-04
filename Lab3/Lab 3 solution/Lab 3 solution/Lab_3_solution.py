@@ -136,12 +136,11 @@ def tabuSearch(formula,n,tt=2):
     bestState=generateRandomState(n)
     print("Initial State:",bestState)
     bestCandidate = bestState
-    visitedStates = []
-    visitedStates.append(bestCandidate)
+    stoppingCriterion = 2**n
+    itr = 0
     tabuList = [0]*n
-    flag = True
-    while(not goalTest(formula,bestState) and flag):
-        flag = False
+    while(not goalTest(formula,bestState) and (itr < stoppingCriterion)):
+        itr += 1
         print("Current tabu list : ",tabuList)
         print("Prev bestcandidate : ",bestCandidate)
         neighbours = tabuMoveGen(bestCandidate)
@@ -150,32 +149,30 @@ def tabuSearch(formula,n,tt=2):
         print("Neighbours : ",neighbours)
         for i in range(len(tabuList)):
             if tabuList[i]==0 :
-                if(neighbours[i] not in visitedStates):
-                    flag = True
-                    if len(bestCandidate) == 0:
+                if len(bestCandidate) == 0:
+                    bestCandidate = neighbours[i]
+                    tabuElement = i
+                else:
+                    if(heuristic(formula,neighbours[i]) > heuristic(formula,bestCandidate)) :
                         bestCandidate = neighbours[i]
                         tabuElement = i
-                    else:
-                        if(heuristic(formula,neighbours[i]) > heuristic(formula,bestCandidate)) :
-                            bestCandidate = neighbours[i]
-                            tabuElement = i
             else : 
                 tabuList[i] = tabuList[i]-1
-        visitedStates.append(bestCandidate)
         tabuList[tabuElement] = tt
         print("New bestcandidate : ",bestCandidate)
         print("New Tabu list : ",tabuList)
         if(heuristic(formula,bestCandidate) > heuristic(formula,bestState)):
             bestState = bestCandidate
             print("Best State updated, heuristic value = ",heuristic(formula,bestState))
-    if(flag == False):
-        print("No more states to explore!\n The best State so far is ",bestState)
+    if( itr >= stoppingCriterion ):
+        print("Number of iterations exceeded! \n The best State so far is ",bestState)
     else :
         print("Best State is : ",bestState)
 
 def main():
-    n=4
-    f=generate_formula(n,5)
+    n=10
+    k=10
+    f=generate_formula(n,k)
     #f=[[1,2,3],[-1,2,3],[-2,1,3],[-3,1,2],[-2,-1,3],[-3,-1,2],[-3,-2,1],[-3,-2,-1]]
     #print(f)
     print_formula(f)
