@@ -65,12 +65,11 @@ def generateRandomState(n):
         state.append(random.randint(0,1))
     return state
 
-def VND(formula, n):
-    state=generateRandomState(n)
+def VND(formula, n, initState):
+    state=initState
     print("Starting VND.....\n")
     print("Initial State:",state)
     heuristic_value=heuristic(formula,state)
-    print(heuristic_value)
     count=1
     kmax=n
     k=1
@@ -88,19 +87,19 @@ def VND(formula, n):
             k=1
             heuristic_value=best_heuristic_value
             state=nextMove
-            print(heuristic_value)
             print(state)
         else:
             print("No better state in neighborhood",k)
             k=k+1
-        print("Total states explored:",count)
+    print("Final State",state)
+    print("Total states explored:",count)
 
 def beamSearch(formula,n,beamLength,initState):
     state=initState
     print("Starting beam search.....")
     print("Initial State:",state)
     heuristic_value=heuristic(formula,state)
-    print(heuristic_value)
+    
     visited=[]
     pq=PriorityQueue()
     pq.put((heuristic(formula,state),state))
@@ -109,7 +108,7 @@ def beamSearch(formula,n,beamLength,initState):
         x=pq.get()
         state=x[1]
         count+=1
-        # print("Element popped from queue:",state)
+        print("Element popped from queue:",state)
         # print("Heuristic value:",x[0])
         if(goalTest(formula,state)):
             print("Goal state found")
@@ -121,6 +120,7 @@ def beamSearch(formula,n,beamLength,initState):
                 if nextState not in visited:
                     pq.put((heuristic(formula,nextState),nextState))
                     visited.append(nextState)
+    print("Final State:",state)
     print("Total states explored:",count)
 
 def tabuMoveGen(state):
@@ -174,27 +174,20 @@ def tabuSearch(formula,n,tt,initState):
     print("number of states explored : ",itr+1)
 
 def main():
-    n=5
-    k=44
+    n=int(input("Enter value of n(number of variables): "))
+    k=int(input("Enter value of k(number of clauses): "))
     f=generate_formula(n,k)
-    #f=[[1,2,3],[-1,2,3],[-2,1,3],[-3,1,2],[-2,-1,3],[-3,-1,2],[-3,-2,1],[-3,-2,-1]]
-    #print(f)
     print_formula(f)
-    #print(heuristic(f,[0,0,0,0]))
-    #print(moveGen([0,0,0,0]))
-    #print(list(combinations(range(4),3)))
-    #print(moveGen([1,1,0,0],1))
-    #print(generateRandomState(4))
-    # VND(f,n)
-    # for i in range(n):
-    #     print("\nBeam search for beam length : ",i)
     initState=generateRandomState(n)
-    
-    # beamSearch(f,n,2,initState)
 
-    for i in range(1,n+1,1):
-        print("i",i)
-        tabuSearch(f,n,i,initState)
-        # beamSearch(f,n,i,initState)
-    # tabuSearch(f,n,5,initState)
+    VND(f,n,initState)
+    
+    beamLength=int(input("\n\nEnter beam length for beam search: "))
+    beamSearch(f,n,beamLength,initState)
+
+    tabuTenure=int(input("\n\nEnter tabu tenure (less than n) for tabu search: "))
+    tabuSearch(f,n,tabuTenure,initState)
+
+
+    
 main()

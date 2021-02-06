@@ -1,0 +1,1 @@
+Run the shell script without any arguments. Make sure python3 package is installed.
