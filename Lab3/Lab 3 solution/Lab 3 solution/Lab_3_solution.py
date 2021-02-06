@@ -95,8 +95,8 @@ def VND(formula, n):
             k=k+1
         print("Total states explored:",count)
 
-def beamSearch(formula,n,beamLength):
-    state=generateRandomState(n)
+def beamSearch(formula,n,beamLength,initState):
+    state=initState
     print("Starting beam search.....")
     print("Initial State:",state)
     heuristic_value=heuristic(formula,state)
@@ -109,8 +109,8 @@ def beamSearch(formula,n,beamLength):
         x=pq.get()
         state=x[1]
         count+=1
-        print("Element popped from queue:",state)
-        print("Heuristic value:",x[0])
+        # print("Element popped from queue:",state)
+        # print("Heuristic value:",x[0])
         if(goalTest(formula,state)):
             print("Goal state found")
             break
@@ -131,9 +131,9 @@ def tabuMoveGen(state):
         neighbours.append(neighbour)
     return neighbours
 
-def tabuSearch(formula,n,tt=2):
+def tabuSearch(formula,n,tt,initState):
     print("\nStarting Tabu Search ...")
-    bestState=generateRandomState(n)
+    bestState=initState
     print("Initial State:",bestState)
     bestCandidate = bestState
     stoppingCriterion = 2**n
@@ -168,10 +168,11 @@ def tabuSearch(formula,n,tt=2):
         print("Number of iterations exceeded! \n The best State so far is ",bestState)
     else :
         print("Best State is : ",bestState)
+    print("number of states explored : ",itr+1)
 
 def main():
-    n=10
-    k=10
+    n=5
+    k=30
     f=generate_formula(n,k)
     #f=[[1,2,3],[-1,2,3],[-2,1,3],[-3,1,2],[-2,-1,3],[-3,-1,2],[-3,-2,1],[-3,-2,-1]]
     #print(f)
@@ -181,9 +182,16 @@ def main():
     #print(list(combinations(range(4),3)))
     #print(moveGen([1,1,0,0],1))
     #print(generateRandomState(4))
-    VND(f,n)
-    beamSearch(f,n,2)
-    print("\n\n-- beam over | tabu begin --")
-    tabuSearch(f,n,2)
+    # VND(f,n)
+    # for i in range(n):
+    #     print("\nBeam search for beam length : ",i)
+    initState=generateRandomState(n)
+    
+    # beamSearch(f,n,2,initState)
 
+    # for i in range(1,n+1,1):
+    #     print("i",i)
+    #     tabuSearch(f,n,i,initState)
+        # beamSearch(f,n,i,initState)
+    tabuSearch(f,n,5,initState)
 main()
