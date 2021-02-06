@@ -139,6 +139,9 @@ def tabuSearch(formula,n,tt,initState):
     stoppingCriterion = 2**n
     itr = 0
     tabuList = [0]*n
+    if(tt>=n):
+        print("please use smaller tt")
+        return
     while(not goalTest(formula,bestState) and (itr < stoppingCriterion)):
         itr += 1
         print("Current tabu list : ",tabuList)
@@ -172,7 +175,7 @@ def tabuSearch(formula,n,tt,initState):
 
 def main():
     n=5
-    k=30
+    k=44
     f=generate_formula(n,k)
     #f=[[1,2,3],[-1,2,3],[-2,1,3],[-3,1,2],[-2,-1,3],[-3,-1,2],[-3,-2,1],[-3,-2,-1]]
     #print(f)
@@ -189,9 +192,9 @@ def main():
     
     # beamSearch(f,n,2,initState)
 
-    # for i in range(1,n+1,1):
-    #     print("i",i)
-    #     tabuSearch(f,n,i,initState)
+    for i in range(1,n+1,1):
+        print("i",i)
+        tabuSearch(f,n,i,initState)
         # beamSearch(f,n,i,initState)
-    tabuSearch(f,n,5,initState)
+    # tabuSearch(f,n,5,initState)
 main()
