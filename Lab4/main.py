@@ -68,6 +68,14 @@ class Graph:
     def isProcessed(self,index):
         # returns if the node is processed
         return self.nodes[index].isProcessed()
+    def getNeighbours(self,index):
+        return self.nearestNeighbour[index]
+    def getUnvisitedNeighbours(self,index):
+        unvisited = []
+        for dist,i in self.nearestNeighbour[index]:
+            if not self.isVisited(i):
+                unvisited.append((dist,i))
+        return unvisited
 
 def readData():
     distanceType = input()
@@ -92,5 +100,8 @@ def readData():
 # print(graph.getNode(0).getColor(),graph.isVisited(0))
 # graph.changeNodeColor(0,Color.GREY)
 # print(graph.getNode(0).getColor(),graph.isVisited(0))
+# print(graph.getNeighbours(1))
+# print('-')
+# print(graph.getUnvisitedNeighbours(1))
 # graph.makeAllNodesUnvisited()
 # print(graph.getNode(0).getColor(),graph.isVisited(0))
