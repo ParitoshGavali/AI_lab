@@ -1,4 +1,5 @@
 import copy
+import random
 from enum import Enum
 
 class Color(Enum):
@@ -49,9 +50,9 @@ class Graph:
             for j in range(self.numNodes):
                 neighbours.append((distanceMatrix[i][j],j))
             neighbours.sort()
-            print(neighbours.pop(0))
+            # print(neighbours.pop(0))
             self.nearestNeighbour.append(copy.deepcopy(neighbours))
-        print("nearest neighbour : \n", self.nearestNeighbour)
+        # print("nearest neighbour : \n", self.nearestNeighbour)
     def getNode(self,index):
         # return node at given index
         return self.nodes[index]
@@ -76,6 +77,14 @@ class Graph:
             if not self.isVisited(i):
                 unvisited.append((dist,i))
         return unvisited
+    def getDistance(self,index1,index2):
+        return self.distanceMatrix[index1][index2]
+    def getHeuristicCost(self,path):
+        cost = 0
+        for i in range(len(path)-1):
+            cost = cost + self.getDistance(path[i],path[i+1])
+        cost = cost + self.getDistance(path[0],path[len(path)-1])
+        return cost
 
 def readData():
     distanceType = input()
@@ -105,3 +114,16 @@ def readData():
 # print(graph.getUnvisitedNeighbours(1))
 # graph.makeAllNodesUnvisited()
 # print(graph.getNode(0).getColor(),graph.isVisited(0))
+
+graph = readData()
+tour = [i for i in range(0,graph.numNodes)]
+bestTourCost = graph.getHeuristicCost(tour)
+print("best tour : ",bestTourCost)
+print(tour)
+for i in range(200):
+    random.shuffle(tour)
+    tourCost = graph.getHeuristicCost(tour)
+    if(bestTourCost > tourCost):
+        bestTourCost = tourCost
+        print("best tour cost:",bestTourCost)
+        print(tour)
