@@ -1,4 +1,5 @@
 import copy
+import math
 import random
 from enum import Enum
 
@@ -115,15 +116,95 @@ def readData():
 # graph.makeAllNodesUnvisited()
 # print(graph.getNode(0).getColor(),graph.isVisited(0))
 
+def TSPfitness(gene,graph):
+    return graph.getHeuristicCost(gene)
+
+def rouletteWheel(population,fitness):
+    fitness = [fitness(gene) for gene in population]
+    n = len(population)
+    totalFitness = sum(fitness)
+    rouletteSelection = [math.floor((f/totalFitness)*n) for f in fitness]
+    survivingPopulation = []
+    for i in range(n):
+        for _ in range(rouletteSelection[i]):
+            survivingPopulation.append(population[i])
+    print('Fitness : ',fitness)
+    print('roulette wheel : ',rouletteSelection)
+    if(len(survivingPopulation) is not n):
+        print('ERROR : new population size is not expected! required ',n,' recieved ',len(survivingPopulation))
+        # print('Population : ',population)
+        
+        # print('next Population : ',survivingPopulation)
+        exit()
+    return survivingPopulation
+
+class GeneticAlgorithm:
+    populationSize = -1
+    population = []
+    graph = None
+    selectionFunction = None
+    fitnessFunction = None
+    def __init__(self,graph,populationSize=6,selectionFunction=rouletteWheel,fitnessFunction=TSPfitness):
+        self.populationSize = populationSize
+        self.graph = graph
+        self.selectionFunction = selectionFunction
+        self.fitnessFunction = fitnessFunction
+        tour = [i for i in range(0,self.graph.numNodes)]
+        print("test 1")
+        for _ in range(self.populationSize):
+            random.shuffle(tour)
+            self.population.append(copy.deepcopy(tour))
+    def fitness(self,gene):
+        return (self.fitnessFunction(gene,self.graph)/10000)**4
+    def selection(self):
+        return self.selectionFunction(self.population,self.fitness)
+    # def crossover(self):
+        #write code for crossover to get new generation
+    # def mutation(self):
+        #write code for mutation
+    def evolve(self):
+        newPopulation = self.selection()
+        # print("Old population : ",self.population)
+        oldMadara = self.getBestGene()
+        print("\nBest of old population : \n",oldMadara,"\nfitness of : ",self.fitness(oldMadara))
+        self.population = newPopulation
+        newMadara = self.getBestGene()
+        print("\nNew population : \n",newMadara,"\nfitness of : ",self.fitness(newMadara))
+        # self.crossover()
+        # self.mutation()
+    def isBetterGene(self,g1,g2):
+        return self.fitness(g1)<self.fitness(g2)
+    def getBestGene(self):
+        bestGene = None
+        for gene in self.population:
+            if bestGene == None:
+                bestGene = gene
+            elif self.isBetterGene(gene,bestGene):
+                bestGene = gene
+        return bestGene
+
+
+print("test 0")
 graph = readData()
-tour = [i for i in range(0,graph.numNodes)]
-bestTourCost = graph.getHeuristicCost(tour)
-print("best tour : ",bestTourCost)
-print(tour)
-for i in range(200):
-    random.shuffle(tour)
-    tourCost = graph.getHeuristicCost(tour)
-    if(bestTourCost > tourCost):
-        bestTourCost = tourCost
-        print("best tour cost:",bestTourCost)
-        print(tour)
+print("test after data 0")
+AI = GeneticAlgorithm(graph)
+AI.evolve()
+
+# graph = readData()
+# tour = [i for i in range(0,graph.numNodes)]
+# bestTourCost = graph.getHeuristicCost(tour)
+# print("best tour : ",bestTourCost)
+# buffer = ""
+# for city in tour:
+#     buffer = buffer + str(city) + " "
+# print(buffer)
+# for i in range(200):
+#     random.shuffle(tour)
+#     tourCost = graph.getHeuristicCost(tour)
+#     if(bestTourCost > tourCost):
+#         bestTourCost = tourCost
+#         print("best tour cost:",bestTourCost)
+#         buffer = ""
+#         for city in tour:
+#             buffer = buffer + str(city) + " "
+#         print(buffer)
