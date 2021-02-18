@@ -1,5 +1,6 @@
 import copy
 import math
+import time
 import random
 from enum import Enum
 
@@ -80,11 +81,14 @@ class Graph:
         return unvisited
     def getDistance(self,index1,index2):
         return self.distanceMatrix[index1][index2]
+    def getMaxPossibleTourLength(self):
+        maximum = max([max(row) for row in self.distanceMatrix])
+        return maximum*self.numNodes
     def getHeuristicCost(self,path):
         cost = 0
         for i in range(len(path)-1):
             cost = cost + self.getDistance(path[i],path[i+1])
-        cost = cost + self.getDistance(path[0],path[len(path)-1])
+        cost = cost + self.getDistance(path[len(path)-1],path[0])
         return cost
 
 def readData():
@@ -117,26 +121,64 @@ def readData():
 # print(graph.getNode(0).getColor(),graph.isVisited(0))
 
 def TSPfitness(gene,graph):
-    return graph.getHeuristicCost(gene)
+    return (graph.getMaxPossibleTourLength()-graph.getHeuristicCost(gene))
 
 def rouletteWheel(population,fitness):
     fitness = [fitness(gene) for gene in population]
     n = len(population)
     totalFitness = sum(fitness)
-    rouletteSelection = [math.floor((f/totalFitness)*n) for f in fitness]
+    percentage = [(f/totalFitness) for f in fitness]
     survivingPopulation = []
-    for i in range(n):
-        for _ in range(rouletteSelection[i]):
-            survivingPopulation.append(population[i])
     print('Fitness : ',fitness)
-    print('roulette wheel : ',rouletteSelection)
+    print('percentage : ',percentage)
+    # take 1 : convert percentage to integers directly
+    # rouletteSelection = [math.floor(p*n) for p in percentage]
+    # for i in range(n):
+    #     for _ in range(rouletteSelection[i]):
+    #         survivingPopulation.append(population[i])
+    # 
+    # take 2 : find max, append, reduce the percentage
+    # for i in range(n):
+    #     maxProbGene = max(percentage)
+    #     idx = percentage.index(maxProbGene)
+    #     while(percentage[idx]>=0.0):
+    #         percentage[idx] -= (1/n)
+    #         survivingPopulation.append(population[idx])
+    #         if(len(survivingPopulation)>=n):
+    #             return survivingPopulation
+    #     print('Gene number : ',idx,' added')
+    #
+    # take 3 : actual roulette wheel
+    for i in range(n):
+        ball = random.random()
+        value = 0
+        for j in range(n):
+            value += percentage[j]
+            if(ball<value):
+                survivingPopulation.append(population[j])
+                print('added gene ',j)
+                break
     if(len(survivingPopulation) is not n):
         print('ERROR : new population size is not expected! required ',n,' recieved ',len(survivingPopulation))
-        # print('Population : ',population)
-        
-        # print('next Population : ',survivingPopulation)
         exit()
     return survivingPopulation
+
+def orderedCrossover(population):
+    n = len(population[0])
+    getRange = random.sample(range(1,n),2)
+    getRange.sort()
+    start = getRange[0]
+    stop = getRange[1]
+    # print("slice index : ",start,stop)
+    newPopulation = []
+    for gene in population:
+        getRange = random.sample(range(1,n),2)
+        getRange.sort()
+        start = getRange[0]
+        stop = getRange[1]
+        newGene = gene[start:stop+1] + gene[:start] + gene[stop+1:]
+        newPopulation.append(copy.copy(newGene))
+    return newPopulation
 
 class GeneticAlgorithm:
     populationSize = -1
@@ -144,34 +186,47 @@ class GeneticAlgorithm:
     graph = None
     selectionFunction = None
     fitnessFunction = None
-    def __init__(self,graph,populationSize=6,selectionFunction=rouletteWheel,fitnessFunction=TSPfitness):
+    crossoverFunction = None
+    def __init__(self,graph,populationSize=6,selectionFunction=rouletteWheel,fitnessFunction=TSPfitness,crossoverFunction=orderedCrossover):
         self.populationSize = populationSize
         self.graph = graph
         self.selectionFunction = selectionFunction
         self.fitnessFunction = fitnessFunction
+        self.crossoverFunction = crossoverFunction 
         tour = [i for i in range(0,self.graph.numNodes)]
         print("test 1")
         for _ in range(self.populationSize):
             random.shuffle(tour)
             self.population.append(copy.deepcopy(tour))
     def fitness(self,gene):
-        return (self.fitnessFunction(gene,self.graph)/10000)**4
+        return (50**(self.fitnessFunction(gene,self.graph)/10000))
+    def tourLength(self,gene):
+        return self.graph.getHeuristicCost(gene)
     def selection(self):
-        return self.selectionFunction(self.population,self.fitness)
-    # def crossover(self):
-        #write code for crossover to get new generation
+        self.population = self.selectionFunction(self.population,self.fitness)
+    def crossover(self):
+        # print("population before corssover : ",self.population)
+        self.population = self.crossoverFunction(self.population)
+        # print("population after crossover : ",self.population)
     # def mutation(self):
         #write code for mutation
     def evolve(self):
-        newPopulation = self.selection()
-        # print("Old population : ",self.population)
-        oldMadara = self.getBestGene()
-        print("\nBest of old population : \n",oldMadara,"\nfitness of : ",self.fitness(oldMadara))
-        self.population = newPopulation
-        newMadara = self.getBestGene()
-        print("\nNew population : \n",newMadara,"\nfitness of : ",self.fitness(newMadara))
-        # self.crossover()
+        hashirama = self.getBestGene()
+        print("\n Best population before selection : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
+        
+        # selection process
+        self.selection()
+        hashirama = self.getBestGene()
+        print("\n Best population after selection : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
+
+        # crossover 
+        self.crossover()
+        hashirama = self.getBestGene()
+        print("\n Best population after crossover : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
+
         # self.mutation()
+
+        return hashirama
     def isBetterGene(self,g1,g2):
         return self.fitness(g1)<self.fitness(g2)
     def getBestGene(self):
@@ -183,13 +238,36 @@ class GeneticAlgorithm:
                 bestGene = gene
         return bestGene
 
-
 print("test 0")
 graph = readData()
 print("test after data 0")
 AI = GeneticAlgorithm(graph)
-AI.evolve()
+timeout = time.time() + 60*2
+bestTour = None
+genNumber = 0
+stopingCriteria = 1000
+while ((time.time() < timeout) and (stopingCriteria > 0)):
+    genNumber += 1
+    stopingCriteria -= 1
+    currGenBestTour = AI.evolve()
+    if(bestTour == None):
+        bestTour=currGenBestTour
+    if(AI.tourLength(bestTour)>AI.tourLength(currGenBestTour)):
+        stopingCriteria = 1000
+        bestTour = currGenBestTour
+        print("New best tour : ",AI.tourLength(bestTour)," (generation ",genNumber,")")
+        buffer = ""
+        for city in bestTour:
+            buffer = buffer + str(city) + " "
+        print(buffer)
 
+if(stopingCriteria < 0):
+    print("Evolution stopped!")
+print("New best tour : ",AI.tourLength(bestTour)," (generation ",genNumber,")")
+buffer = ""
+for city in bestTour:
+    buffer = buffer + str(city) + " "
+print(buffer)
 # graph = readData()
 # tour = [i for i in range(0,graph.numNodes)]
 # bestTourCost = graph.getHeuristicCost(tour)
