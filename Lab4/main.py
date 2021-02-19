@@ -121,7 +121,7 @@ def readData():
 # print(graph.getNode(0).getColor(),graph.isVisited(0))
 
 def TSPfitness(gene,graph):
-    return (graph.getMaxPossibleTourLength()-graph.getHeuristicCost(gene))
+    return graph.getHeuristicCost(gene)
 
 def rouletteWheel(population,fitness):
     fitness = [fitness(gene) for gene in population]
@@ -156,12 +156,13 @@ def rouletteWheel(population,fitness):
             value += percentage[j]
             if(ball<value):
                 survivingPopulation.append(population[j])
-                print('added gene ',j)
+                # print('added gene ',j)
                 break
     if(len(survivingPopulation) is not n):
-        print('ERROR : new population size is not expected! required ',n,' recieved ',len(survivingPopulation))
+        # print('ERROR : new population size is not expected! required ',n,' recieved ',len(survivingPopulation))
         exit()
     return survivingPopulation
+
 
 def orderedCrossover(population):
     n = len(population[0])
@@ -180,6 +181,39 @@ def orderedCrossover(population):
         newPopulation.append(copy.copy(newGene))
     return newPopulation
 
+def testCrossover(population):
+    n = len(population[0])
+    pairsList = list(range(0,len(population)))
+    random.shuffle(pairsList)
+    for i in range(0,len(pairsList),2):
+        start = random.randint(0,int(n-(n/10)))
+        stop = start + int(n/20)
+        transplant1 = population[i][start:stop+1]
+        transplant2 = population[i+1][start:stop+1]
+        for t in transplant1:
+            population[i+1].remove(t)
+        population[i+1] += transplant1
+        for t in transplant2:
+            population[i].remove(t)
+        population[i] += transplant2
+    return population
+
+def rePopulate(population, reqSize):
+    n = len(population[0])
+    currPopulation = copy.copy(population)
+    while(len(currPopulation)!=reqSize):
+        parents = random.sample(copy.deepcopy(population),2)
+        start = random.randint(0,int(n/4))
+        stop = start + int(n/2) + random.randint(0,int(n/4))-1
+        transplant1 = parents[0][start:stop+1]
+        for t in transplant1:
+            parents[1].remove(t)
+        offspring = parents[1] + transplant1
+        currPopulation.append(offspring)
+        # print('offspring : ',len(offspring),' currPoplation size : ',len(currPopulation))
+    print('repopulation compplete!')
+    return currPopulation
+
 class GeneticAlgorithm:
     populationSize = -1
     population = []
@@ -187,7 +221,7 @@ class GeneticAlgorithm:
     selectionFunction = None
     fitnessFunction = None
     crossoverFunction = None
-    def __init__(self,graph,populationSize=6,selectionFunction=rouletteWheel,fitnessFunction=TSPfitness,crossoverFunction=orderedCrossover):
+    def __init__(self,graph,populationSize=6,selectionFunction=rouletteWheel,fitnessFunction=TSPfitness,crossoverFunction=testCrossover):
         self.populationSize = populationSize
         self.graph = graph
         self.selectionFunction = selectionFunction
@@ -199,32 +233,61 @@ class GeneticAlgorithm:
             random.shuffle(tour)
             self.population.append(copy.deepcopy(tour))
     def fitness(self,gene):
-        return (50**(self.fitnessFunction(gene,self.graph)/10000))
+        return self.graph.getHeuristicCost(gene)
     def tourLength(self,gene):
         return self.graph.getHeuristicCost(gene)
     def selection(self):
-        self.population = self.selectionFunction(self.population,self.fitness)
+        n = self.populationSize
+        temp = []
+        for gene in self.population:
+            temp.append((self.fitness(gene),gene))
+        temp.sort()
+        newPopulation = []
+        for i in range(int(n/5)):
+            # print(temp[i][0])
+            newPopulation.append(temp[i][1])
+        self.population = newPopulation
+        # newPopulation = []
+        # for i in range(int(n/2)):
+        #     gene = self.getBestGene()
+        #     self.population.remove(gene)
+        #     newPopulation.append(gene)
+        # self.population = newPopulation
+        print("new population size after selection : ",len(self.population))
+        # for gene in self.population:
+        #     print(gene)
     def crossover(self):
         # print("population before corssover : ",self.population)
-        self.population = self.crossoverFunction(self.population)
+        self.population = rePopulate(self.population,self.populationSize)
         # print("population after crossover : ",self.population)
-    # def mutation(self):
-        #write code for mutation
+    def mutation(self):
+        for i in range(len(self.population)):
+            prob = random.randint(0,9)
+            if(prob>8):
+                for _ in range(random.randint(1,5)):
+                    positions = random.sample(range(0,len(self.population[i])),2)
+                    p1 = positions[0]
+                    p2 = positions[1]
+                    temp = self.population[i][p1]
+                    self.population[i][p1] = self.population[i][p2]
+                    self.population[i][p2] = temp
     def evolve(self):
-        hashirama = self.getBestGene()
-        print("\n Best population before selection : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
+        # hashirama = self.getBestGene()
+        # print("\n Best population before selection : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
         
         # selection process
         self.selection()
-        hashirama = self.getBestGene()
-        print("\n Best population after selection : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
+        # hashirama = self.getBestGene()
+        # print("\n Best population after selection : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
 
         # crossover 
         self.crossover()
-        hashirama = self.getBestGene()
-        print("\n Best population after crossover : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
+        # hashirama = self.getBestGene()
+        # print("\n Best population after crossover : \n",hashirama,"\nfitness of : ",self.fitness(hashirama))
 
-        # self.mutation()
+        # mutation 
+        self.mutation()
+        hashirama = self.getBestGene()
 
         return hashirama
     def isBetterGene(self,g1,g2):
@@ -241,14 +304,14 @@ class GeneticAlgorithm:
 print("test 0")
 graph = readData()
 print("test after data 0")
-AI = GeneticAlgorithm(graph)
-timeout = time.time() + 60*2
+AI = GeneticAlgorithm(graph,50)
+timeout = time.time() + 250
 bestTour = None
 genNumber = 0
 stopingCriteria = 1000
 while ((time.time() < timeout) and (stopingCriteria > 0)):
     genNumber += 1
-    stopingCriteria -= 1
+    # stopingCriteria -= 1
     currGenBestTour = AI.evolve()
     if(bestTour == None):
         bestTour=currGenBestTour
