@@ -79,6 +79,11 @@ class Graph:
             if not self.isVisited(i):
                 unvisited.append((dist,i))
         return unvisited
+    def getNearestUnvisitedNeighbour(self,index):
+        for dist,i in self.nearestNeighbour[index]:
+            if not self.isVisited(i):
+                return i
+        return -1
     def getDistance(self,index1,index2):
         return self.distanceMatrix[index1][index2]
     def getMaxPossibleTourLength(self):
@@ -211,7 +216,7 @@ def rePopulate(population, reqSize):
         offspring = parents[1] + transplant1
         currPopulation.append(offspring)
         # print('offspring : ',len(offspring),' currPoplation size : ',len(currPopulation))
-    print('repopulation compplete!')
+    # print('repopulation compplete!')
     return currPopulation
 
 class GeneticAlgorithm:
@@ -221,17 +226,18 @@ class GeneticAlgorithm:
     selectionFunction = None
     fitnessFunction = None
     crossoverFunction = None
-    def __init__(self,graph,populationSize=6,selectionFunction=rouletteWheel,fitnessFunction=TSPfitness,crossoverFunction=testCrossover):
-        self.populationSize = populationSize
+    def __init__(self,graph,population,selectionFunction=rouletteWheel,fitnessFunction=TSPfitness,crossoverFunction=testCrossover):
+        self.populationSize = len(population)
         self.graph = graph
         self.selectionFunction = selectionFunction
         self.fitnessFunction = fitnessFunction
         self.crossoverFunction = crossoverFunction 
-        tour = [i for i in range(0,self.graph.numNodes)]
-        print("test 1")
-        for _ in range(self.populationSize):
-            random.shuffle(tour)
-            self.population.append(copy.deepcopy(tour))
+        self.population = population
+        # tour = [i for i in range(0,self.graph.numNodes)]
+        # print("test 1")
+        # for _ in range(self.populationSize):
+        #     random.shuffle(tour)
+        #     self.population.append(copy.deepcopy(tour))
     def fitness(self,gene):
         return self.graph.getHeuristicCost(gene)
     def tourLength(self,gene):
@@ -253,7 +259,7 @@ class GeneticAlgorithm:
         #     self.population.remove(gene)
         #     newPopulation.append(gene)
         # self.population = newPopulation
-        print("new population size after selection : ",len(self.population))
+        # print("new population size after selection : ",len(self.population))
         # for gene in self.population:
         #     print(gene)
     def crossover(self):
@@ -291,7 +297,7 @@ class GeneticAlgorithm:
 
         return hashirama
     def isBetterGene(self,g1,g2):
-        return self.fitness(g1)<self.fitness(g2)
+        return self.tourLength(g1)<self.tourLength(g2)
     def getBestGene(self):
         bestGene = None
         for gene in self.population:
@@ -301,24 +307,49 @@ class GeneticAlgorithm:
                 bestGene = gene
         return bestGene
 
-print("test 0")
+def greedyAlgo(graph):
+    tours = []
+    for i in range(graph.numNodes):
+        graph.makeAllNodesUnvisited()
+        tour = []
+        neighbours = graph.getNeighbours(i)
+        graph.changeNodeColor(neighbours[0][1],Color.BLACK)
+        graph.changeNodeColor(neighbours[1][1],Color.BLACK)
+        tour.append(neighbours[0][1])
+        tour.append(neighbours[1][1])
+        ind = neighbours[1][1]
+        while(len(tour)!=graph.numNodes):
+            ind = graph.getNearestUnvisitedNeighbour(ind)
+            tour.append(ind)
+            graph.changeNodeColor(ind,Color.BLACK)
+        cost = graph.getHeuristicCost(tour)
+        tours.append((cost,tour))
+        # print('\n',i,', cost : ',cost,'\n',tour)
+    tours.sort()
+    return tours
+
 graph = readData()
-print("test after data 0")
-AI = GeneticAlgorithm(graph,50)
+greedyTours = greedyAlgo(graph)
+tours = []
+for i in range(50):
+    tours.append(greedyTours[i][1])
+print(tours)
+AI = GeneticAlgorithm(graph,tours)
 timeout = time.time() + 250
-bestTour = None
+bestTour = AI.evolve()
+bestTourLength = AI.tourLength(bestTour)
 genNumber = 0
 stopingCriteria = 1000
 while ((time.time() < timeout) and (stopingCriteria > 0)):
     genNumber += 1
     # stopingCriteria -= 1
     currGenBestTour = AI.evolve()
-    if(bestTour == None):
-        bestTour=currGenBestTour
-    if(AI.tourLength(bestTour)>AI.tourLength(currGenBestTour)):
+    currTourLength = AI.tourLength(currGenBestTour)
+    if(bestTourLength>=currTourLength):
         stopingCriteria = 1000
-        bestTour = currGenBestTour
-        print("New best tour : ",AI.tourLength(bestTour)," (generation ",genNumber,")")
+        bestTour = copy.deepcopy(currGenBestTour)
+        bestTourLength = currTourLength
+        print("New best tour : ",bestTourLength," (generation ",genNumber,")")
         buffer = ""
         for city in bestTour:
             buffer = buffer + str(city) + " "
@@ -326,7 +357,7 @@ while ((time.time() < timeout) and (stopingCriteria > 0)):
 
 if(stopingCriteria < 0):
     print("Evolution stopped!")
-print("New best tour : ",AI.tourLength(bestTour)," (generation ",genNumber,")")
+print("Final best tour : ",bestTourLength," (generation ",genNumber,")")
 buffer = ""
 for city in bestTour:
     buffer = buffer + str(city) + " "
