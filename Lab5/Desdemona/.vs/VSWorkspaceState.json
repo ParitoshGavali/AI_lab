@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\bots",
+    "\\bots\\MyBot",
+    "\\bots\\RandomBot",
+    "\\include",
+    "\\src"
+  ],
+  "SelectedNode": "\\include\\OthelloBoard.h",
+  "PreviewInSolutionExplorer": false
+}
